@@ -1,95 +1,62 @@
-import React, { useState } from 'react'
+import { Step, StepLabel, Stepper, Typography } from '@material-ui/core'
+import React, { useState, useEffect } from 'react'
 
-import { Button, TextField, Switch, FormControlLabel } from '@material-ui/core'
+import DadosEntrega from './DadosEntrega'
+import DadosPessoais from './DadosPessoais'
+import DadosUsuario from './DadosUsuario'
 
+const FormularioCadastro = ({aoEnviar}) => {
 
-const FormularioCadastro = ({aoEnviar,validaCPF}) => {
-  const [nome,setNome] = useState("");
-  const [sobrenome,setSobrenome] = useState("");
-  const [cpf,setCpf] = useState("");
-  const [promocoes,setPromocoes] = useState(true);
-  const [novidades,setNovidades] = useState(true);
-  const [erros,setErros] = useState({cpf:{valido:true, texto:""}});
+  const [etapaAtual, setEtapaAtual] = useState(0);
+  const [dadosColetados, setDados] = useState({});
+
+  useEffect(() => {
+    if (etapaAtual === formularios.length-1) {
+      aoEnviar(dadosColetados)
+    }
+  });
+
+  const coletarDados = (dados) => {
+     setDados({...dadosColetados, ...dados});
+     proximo();
+  };
+
+  const proximo = () => {
+    setEtapaAtual(etapaAtual+1);
+  }
+
+  const formularios = [
+    <DadosUsuario aoEnviar={coletarDados} />,
+    <DadosPessoais aoEnviar={coletarDados}  />,
+    <DadosEntrega aoEnviar={coletarDados} />,
+    <Typography variant="h5">Obrigado pelo Cadastro!</Typography>
+  ]
+
+  //Refatoração para deixar o código mais simples sem o  switch
+  //Sempre podemos usar uma abordagem de array no lugar do switch
+  // const formularioAtual = (etapa) => {
+  //   switch (etapa) {
+  //     case 0:
+  //       return <DadosUsuario aoEnviar={proximo} />
+  //     case 1:
+  //       return <DadosPessoais aoEnviar={proximo} validaCPF={validaCPF} />
+  //     case 2:
+  //       return <DadosEntrega aoEnviar={aoEnviar} />
+  //     default:
+  //       return <Typography>Erro ao Selecionar Formulário</Typography>
+  //   }
+  // }
 
   return (
-    <form onSubmit={(e) => {
-        e.preventDefault()
-        aoEnviar({nome, sobrenome, cpf, promocoes, novidades})
-        //console.log(nome, sobrenome, cpf, promocoes, novidades)
-      }}
-    >
-      <TextField
-        value={nome}
-        onChange={(e) => {
-          setNome(e.target.value);
-        }}
-        id="nome"
-        label="Nome"
-        margin="normal"
-        variant="outlined"
-        fullWidth
-      />
-
-      <TextField
-        value={sobrenome}
-        onChange={(e) => {
-          setSobrenome(e.target.value);
-        }}      
-        id="sobrenome"
-        label="Sobrenome"
-        margin="normal"
-        variant="outlined"
-        fullWidth
-      />
-
-      <TextField
-        value={cpf}
-        onChange={(e) => {
-          setCpf(e.target.value);
-        }}
-        onBlur={(e) => {
-          const ehValido = validaCPF(cpf);
-          setErros({
-            cpf: ehValido
-          })
-        }}
-        error={!erros.cpf.valido}
-        helperText={erros.cpf.texto}
-        id="cpf"
-        label="CPF"
-        margin="normal"
-        variant="outlined"
-        fullWidth
-      />
-
-      <FormControlLabel
-        label="Promoções"
-        control={
-          <Switch
-            onChange={(e) => {
-              setPromocoes(e.target.checked);
-            }}           
-            name="promocoes"
-            checked={promocoes}
-            color="primary"
-          />}
-      />
-
-      <FormControlLabel
-        label="Novidades"
-        control={
-          <Switch
-          onChange={(e) => {
-            setNovidades(e.target.checked);
-          }}           
-            name="novidades"
-            checked={novidades}
-            color="primary"
-          />}
-      />      
-
-      <Button type="submit" variant="contained" color="primary">Cadastrar</Button>
-    </form>
+    <>
+      <Stepper activeStep={etapaAtual}>
+        <Step><StepLabel>Login</StepLabel></Step>
+        <Step><StepLabel>Pessoal</StepLabel></Step>
+        <Step><StepLabel>Entrega</StepLabel></Step>
+        <Step><StepLabel>Finalização</StepLabel></Step>
+      </Stepper>
+      {formularios[etapaAtual]}
+    </>
   )
 }
 
